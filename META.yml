@@ -1,0 +1,41 @@
+---
+name: REST-Resource
+version: 0.5.0.9
+author:
+  - frotz@acm.org
+abstract: Abstract base class for RESTful CGIs.
+license: apache
+resources:
+  license: http://apache.org/licenses/LICENSE-2.0
+requires:
+  CGI: '> 0'
+  Data::Dumper: '> 0'
+  HTTP::Status: '> 0'
+  JSON: '> 0'
+  XML::Dumper: '> 0'
+  perl: 5.6.1
+build_requires:
+  Devel::Cover: '>= 0.55'
+  Test::Class: '>= 0.22'
+  Test::More: '>= 0.66'
+recommends:
+  CGI: '>= 3.27'
+  Data::Dumper: '>= 2.121'
+  FCGI: '>= 0.67'
+  HTTP::Status: '>= 1.28'
+  JSON: '>= 1.07'
+  XML::Dumper: '>= 0.81'
+provides:
+  REST::Request:
+    file: lib/REST/Request.pm
+    version: 0.5.0.9
+  REST::RequestFast:
+    file: lib/REST/RequestFast.pm
+    version: 0.5.0.9
+  REST::Resource:
+    file: lib/REST/Resource.pm
+    version: 0.5.0.9
+generated_by: Module::Build version 0.2806
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
