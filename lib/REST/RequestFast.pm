@@ -62,7 +62,7 @@ use strict;
 use warnings;
 use base "CGI::Fast";
 
-our( $VERSION )	= '0.5.0.9';	## MODULE-VERSION-NUMBER
+our( $VERSION )	= '0.5.1.14';	## MODULE-VERSION-NUMBER
 
 
 

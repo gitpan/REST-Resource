@@ -113,15 +113,13 @@ package REST::Resource;
 use strict;			## Strict coding standards
 use warnings;			## Very strict coding standards
 
-use REST::RequestFast;
-
 use CGI	qw( :standard );
 use HTTP::Status;		## Mneumonic HTTP Status codes.
 use XML::Dumper;		## Output format: XML
 use Data::Dumper;		## Output format: HTML
 use JSON;			## Output format: JavaScript Object Notation
 
-our( $VERSION )	= '0.5.0.9';	## MODULE-VERSION-NUMBER
+our( $VERSION )	= '0.5.1.14';	## MODULE-VERSION-NUMBER
 
 my( $mimetype_mapping )	=
 {
@@ -225,16 +223,16 @@ sub	new
 
 USAGE:
 
-    my( $restful )	= new REST::Resource( new CGI::Fast() );
+    my( $restful )	= new REST::Resource( new REST::RequestFast() );
     $restful->run();
 
-    my( $restful )	= new Your::WWW::Resource::Implementation( new CGI::Fast() );
+    my( $restful )	= new Your::WWW::Resource::Implementation( new REST::RequestFast() );
     $restful->run();
 
 DESCRIPTION:
 
-    This method will run a CGI::Fast instance.  It delegates request
-    interpolation to the registered request instance via the
+    This method will run a REST::RequestFast instance.  It delegates
+    request interpolation to the registered request instance via the
     constructor.  The default is a shim derived class of CGI.pm.
 
 WWW::RESOURCE COMPATIBILITY:
@@ -264,41 +262,52 @@ WARNING:
 sub	run
 {
     my( $this )	= shift;
-    my( $html )	= $this->can( "browserprint" );						## WWW::Resource signature method.
-    my( $ttl )	= $this->can( "ttl" );
-    $this->format( "html", $html, "WWW::Resource style html-format handler." )	if  ($html);
-    $this->{ttl}	= $this->ttl()						if  ($ttl);
-    $this->{starttime}	= time();
 
-    my( $cgi );
-    while( ($cgi = new REST::RequestFast()) )
+    eval
     {
-	my( $authenticate )	= $this->method( "authenticate" );
-	my( $status, $data )= $this->$authenticate( $cgi );				## We presume that $authenticate always exists.
-	if  ($status == RC_OK)
+	require "REST/RequestFast.pm";			## Conditional environment fun and games.
+    };
+    if  (defined( %REST::RequestFast:: ))
+    {
+	my( $html )	= $this->can( "browserprint" );						## WWW::Resource signature method.
+	my( $ttl )	= $this->can( "ttl" );
+	$this->format( "html", $html, "WWW::Resource style html-format handler." )	if  ($html);
+	$this->{ttl}	= $this->ttl()						if  ($ttl);
+	$this->{starttime}	= time();
+
+	my( $cgi );
+	while( ($cgi = new REST::RequestFast()) )
 	{
-	    my( $method )	= $this->method( $cgi->http( "REQUEST_METHOD" ) );
-	    if  ($html)									## WWW::Resource 0.01 semantics detected.
+	    my( $authenticate )	= $this->method( "authenticate" );
+	    my( $status, $data )= $this->$authenticate( $cgi );				## We presume that $authenticate always exists.
+	    if  ($status == RC_OK)
 	    {
-		my( %query )	= map { split /=/ } split /;/, lc( $ENV{QUERY_STRING} );## Gratuitous case mangling.
-		$this->_return_result( $cgi, $this->$method->( \%query ) );		## Old calling convention.
+		my( $method )	= $this->method( $cgi->http( "REQUEST_METHOD" ) );
+		if  ($html)									## WWW::Resource 0.01 semantics detected.
+		{
+		    my( %query )	= map { split /=/ } split /;/, lc( $ENV{QUERY_STRING} );## Gratuitous case mangling.
+			$this->_return_result( $cgi, $this->$method->( \%query ) );		## Old calling convention.
+		}
+		else
+		{
+		    $this->_return_result( $cgi, $this->$method( $cgi ) );			## New calling convention.
+		}
 	    }
 	    else
 	    {
-		$this->_return_result( $cgi, $this->$method( $cgi ) );			## New calling convention.
+		$this->_return_result( $cgi, $status, $data );
+	    }
+	    if ( (time() - $this->{starttime}) > $this->{ttl} )
+	    {
+		return;
 	    }
 	}
-	else
-	{
-	    $this->_return_result( $cgi, $status, $data );
-	}
-	if ( (time() - $this->{starttime}) > $this->{ttl} )
-	{
-	    return;
-	}
+    }
+    else
+    {
+	die "REST::Request did not load.  Presumably CGI::Fast and FCGI are unavailable.";
     }
 }
-
 
 
 

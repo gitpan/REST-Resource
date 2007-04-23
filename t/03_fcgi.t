@@ -3,16 +3,80 @@ package main;
 
 no warnings "redefine";
 use blib;
-use Test::More tests => 13;
+use Test::More;
+
+#----------------------------------------------------------------------
+=pod
+
+DESCRIPTION:
+
+    This BEGIN block will take the $test_count is registered for this
+    file IFF the dependent modules can be loaded.  Because the CPAN
+    automated test tools won't guarantee that my dependencies are
+    loaded correctly, I have to do my own work to ensure that this
+    module passes these broken automated tests.
+
+    e.g. If no Makefile.PL is provided, an incorrect one is generated
+    for me (against my desires) which results in a bad build
+    environment and subsequent failed tests.
+
+=cut
+
+BEGIN
+{
+    my( $tests )	= 13;
+    my( @modules )	= ( "REST::Resource", "REST::RequestFast", "CGI::Fast", "FCGI" );
+    my( %files )	= {};
+    my( $safe )		= 1;
+
+    foreach my $module (@modules)
+    {
+	my( $file )	= $module;
+	$file		=~ s/\:\:/\//g;
+	$file		.= ".pm";
+	$files->{ $file } = 0;
+    }
+    foreach my $file (sort keys %{ $files })
+    {
+	foreach my $dir (@INC)
+	{
+	    if  (-f ("$dir/$file"))
+	    {
+		$files->{$file} = 1;
+	    }
+	}
+    }
+    my( @reasons )	= "Conditional environment dependency avoidance:";
+    foreach my $file (sort keys %{ $files })
+    {
+	$safe	= $safe && $files->{ $file };
+	unless  ($files->{$file})
+	{
+	    push( @reasons, "\t$file not found on \@INC." );
+	}
+    }
+    if  ($safe)
+    {
+	plan( tests => $tests );
+    }
+    else
+    {
+	plan( skip_all => join( " ", @reasons ) );
+	exit( 0 );
+    }
+}
+
+use REST::Resource;
+use REST::RequestFast;
 use IO::String;
 use Data::Dumper;
 
-use CGI::Fast;
-use REST::Resource;
-use REST::RequestFast;
+print Dumper \%INC;
+
 
 &main();
 exit( 0 );
+
 
 #----------------------------------------------------------------------
 #----------------------------------------------------------------------

@@ -83,7 +83,6 @@ sub	main
     {
 	mkdir( "./etc", 0755 )		unless( -d "./etc" );
 	&write( "./etc/build_number.txt", $label );
-	&repository_commit();
 	@ARGV = ();					## BAD: Have to hide this from Module::Build.
     }
     my( @lines )	= &read( "./etc/build_number.txt" );
@@ -103,23 +102,27 @@ sub	main
 				       {
 					   "FCGI"		=> ">= 0.67",
 					   "CGI"		=> ">= 3.27",
+					   "CGI::Fast"		=> ">= 1.07",
 					   "HTTP::Status"	=> ">= 1.28",
 					   "JSON"		=> ">= 1.07",
 					   "XML::Dumper"	=> ">= 0.81",
 					   "Data::Dumper"	=> ">= 2.121",
+					   "IO::String"	=> ">= 0",
 				       },
 				       requires		=>
 				       {
 					   perl			=> "5.6.1",
 					   "CGI"		=> "> 0",
 					   "HTTP::Status"	=> "> 0",
-					   "JSON"		=> "> 0",
-					   "XML::Dumper"	=> "> 0",
 					   "Data::Dumper"	=> "> 0",
+					   "Module::Build"	=> "> 0",
 				       },
 				       build_requires	=>
 				       {
-					   "Devel::Cover" 	=> ">= 0.55",	## Which requires...
+				       },
+				       build_recommends	=>
+				       {
+					   "Devel::Cover" 	=> ">= 0.55",
 					   "Test::Class"	=> ">= 0.22",
 					   "Test::More"		=> ">= 0.66",
 				       },
@@ -199,6 +202,8 @@ sub	write
 {
     my( $file )		= shift;
     my( @lines )	= @_;
+    chmod( 0755, $file )			if	($file =~ /cgi$/);
+    chmod( 0644, $file )			unless	($file =~ /cgi$/);
     if  (open( FILE, ">$file" ))
     {
 	print FILE @lines;
@@ -296,21 +301,15 @@ sub	repository_commit
     print "Build: Cleaning build hierarchy...\n";
     `rm -rf blib _build coverage cover_db`;
 
-    print "Build: Updating manifest...\n";
-    `perl Build manifest`;
-
-    `perl Build.PL`;			## Quietly regenerate the ./Build script.
-    print "Build: Performing Build / Coverage Analysis...\n";
-    `sh bin/testcoverage.sh`;
-    print "Build:  Building a source deliverable.\n";
-    `perl Build dist`;
-
     print "Subversion: Generating Change History...\n";
-    `svn log -v -r COMMITTED::HEAD > build_repository_report.txt`;
+    `svn log -v > build_repository_report.txt`;
 
     print "Subversion: Committing...\n";
     `svn commit -m "Finalizing Build $label."`;
 
     print "Subversion: Branching: [build-$label]\n";
     `svn copy -m "Build $label" $ENV{SVN_SSH}/REST-Resource/trunk $ENV{SVN_SSH}/REST-Resource/builds/build-$label`;
+
+    print "Regenerating ./Build\n";
+    `perl Build.PL`;
 }
