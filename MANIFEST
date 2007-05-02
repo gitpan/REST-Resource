@@ -6,6 +6,7 @@ CHANGES
 docs/INSTALL.CGI.txt
 docs/INSTALL.FASTCGI.txt
 docs/INSTALL.WWW-Resource-FRAMEWORK
+docs/ROADMAP.txt
 docs/WWW-Resource-README
 eg/cgi_server/parts.cgi
 eg/client/client.pl
@@ -25,3 +26,7 @@ README
 t/01-module_load.t
 t/02_methods.t
 t/03_fcgi.t
+t/04_conditional_methods.t
+t/05-pod.t
+t/06-pod_coverage.t
+t/07_no_conditional_modules.t

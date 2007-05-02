@@ -17,35 +17,34 @@
 
 =head1	DESCRIPTION
 
-    This class provides a standardized interface shim that users can
-    implement in order to wrap around their favorite CGI::Fast interface
-    module so that it can be registered and used by REST::Resource.
+This class provides a standardized interface shim that users can
+implement in order to wrap around their favorite CGI::Fast interface
+module so that it can be registered and used by REST::Resource.
 
-    If you prefer some module other than CGI.pm to access server-side
-    CGI behavior, then create a module that mimics this interface and
-    register it with REST::Resource as shown in the synopsis.
+If you prefer some module other than CGI.pm to access server-side CGI
+behavior, then create a module that mimics this interface and register
+it with REST::Resource as shown in the synopsis.
 
 =head1	INTERFACE v. ABSTRACT BASE CLASS
 
-    In this case, I prefer Java's interface-style to an abstract base
-    class that someone must override.  Since this class derives from
-    CGI.pm for its implementation, you may not want that baggage in
-    your interface implementation.  Therefore, all you need to do is
-    register a class that provides the functionality specified by this
-    module.
+In this case, I prefer Java's interface-style to an abstract base
+class that someone must override.  Since this class derives from
+CGI.pm for its implementation, you may not want that baggage in your
+interface implementation.  Therefore, all you need to do is register a
+class that provides the functionality specified by this module.
 
-    Since there isn't really a great Perl-based interface specification,
-    REST::Resource will interrogate your registered request_interface
-    to ensure that the class provides the minimum / required methods:
+Since there isn't really a great Perl-based interface specification,
+REST::Resource will interrogate your registered request_interface
+to ensure that the class provides the minimum / required methods:
 
-        new()
-        http()
-        param()
-        header()
+    new()
+    http()
+    param()
+    header()
 
-    If you chose to provide an alternate interface implementation,
-    these are the methods that must exist before REST::Resource will
-    accept your interface.
+If you chose to provide an alternate interface implementation, these
+are the methods that must exist before REST::Resource will accept your
+interface.
 
 =head1	AUTHOR
 
@@ -62,7 +61,7 @@ use strict;
 use warnings;
 use base "CGI::Fast";
 
-our( $VERSION )	= '0.5.1.14';	## MODULE-VERSION-NUMBER
+our( $VERSION )	= '0.5.2.4';	## MODULE-VERSION-NUMBER
 
 
 
@@ -80,17 +79,17 @@ USAGE:
 
 DESCRIPTION:
 
-    This method constructs a new instance of the request object.  The
-    first usage shows how users should pass this into REST::Resource.
-    The second usage shows how you might use this in your unit tests.
+This method constructs a new instance of the request object.  The
+first usage shows how users should pass this into REST::Resource.  The
+second usage shows how you might use this in your unit tests.
 
 WARNING:
 
-    This constructor plays REST games with CGI.pm by detecting PUT or
-    DELETE and transforming the request (temporarily) to POST, then
-    reverting back to the original value before returning an instance.
-    This allows us to use all of the nice POST processing provided by
-    CGI.pm, but for PUT, and DELETE, not just POST.
+This constructor plays REST games with CGI.pm by detecting PUT or
+DELETE and transforming the request (temporarily) to POST, then
+reverting back to the original value before returning an instance.
+This allows us to use all of the nice POST processing provided by
+CGI.pm, but for PUT, and DELETE, not just POST.
 
 =cut
 
@@ -123,8 +122,8 @@ USAGE:
 
 DESCRIPTION:
 
-    This method extracts the given CGI $variable from the underlying
-    $request and returns its $value.
+This method extracts the given CGI $variable from the underlying
+$request and returns its $value.
 
 =cut
 
@@ -133,14 +132,10 @@ sub	http
     my( $this )	= shift;
     my( $var )	= shift;
 
-    my( $retval )	= $this->SUPER::http( $var );	## Try to get it first.
-    unless( $retval )					## Failing that...
-    {
-	$retval		= ($ENV{$var} ||		## Exact name match.
+    my( $retval )	= ($ENV{$var} ||		## Exact name match.
 			   $ENV{ uc( $var ) } ||	## Uppercase match.
 			   $ENV{ lc( $var ) }		## Lowercase match.
 			   );
-    }
     return( $retval );
 }
 
@@ -158,10 +153,10 @@ USAGE:
 
 DESCRIPTION:
 
-    This interface method provides access to the CGI-response header
-    functionality.  This method will be called when you have the
-    collection of response headers that you want to pass down to your
-    base class.
+This interface method provides access to the CGI-response header
+functionality.  This method will be called when you have the
+collection of response headers that you want to pass down to your base
+class.
 
 =cut
 
@@ -186,8 +181,7 @@ USAGE:
 
 DESCRIPTION:
 
-    This method returns the $value of the CGI request parameter
-    $variable.
+This method returns the $value of the CGI request parameter $variable.
 
 =cut
 

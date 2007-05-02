@@ -3,8 +3,7 @@ package main;
 
 no warnings;
 use blib;
-use Test::More tests => 77;
-use IO::String;
+use Test::More tests => 50;
 use Data::Dumper;
 
 use REST::Resource;
@@ -84,9 +83,7 @@ sub	main
     &test_request_interface();
     &test_methods( $restful, $cgi );
     &test_formats( $restful, $cgi );
-    &test_response( $restful, $cgi );
     &test_request( $cgi );
-    &test_authentication( $cgi );
     &test_default_format_detection();
     &test_api_responses();
 }
@@ -129,35 +126,16 @@ sub	test_formats
     my( $restful )	= shift;
     my( $cgi )		= shift;
 
-    ok( $restful->format( "xml" )		eq \&REST::Resource::format_xml, "xml handler matches expectation" );
-    ok( $restful->format( "application/xml" )	eq \&REST::Resource::format_xml, "application/xml handler matches expectation" );
     ok( $restful->format( "html" )		eq \&REST::Resource::format_html, "html handler matches expectation" );
     ok( $restful->format( "text/html" )		eq \&REST::Resource::format_html, "text/html handler matches expectation" );
     ok( $restful->format( "text" )		eq \&REST::Resource::format_text, "text handler matches expectation" );
     ok( $restful->format( "text/plain" )	eq \&REST::Resource::format_text, "text/plain handler matches expectation" );
-    ok( $restful->format( "json" )		eq \&REST::Resource::format_json, "json handler matches expectation" );
-    ok( $restful->format( "text/javascript" )	eq \&REST::Resource::format_json, "text/javascript handler matches expectation" );
 
     ok( ! defined( $restful->format( "non-existent" ) ), "non-existent handler matches expectation" );
 
-    ok( $restful->description( "xml" ) =~ /xml/, "xml description matches expectation" );
-    ok( $restful->description( "application/xml" ) =~ /Accept/, "application/xml description matches expectation" );
     ok( $restful->description( "html" ) =~ /html/, "html description matches expectation" );
     ok( $restful->description( "text/html" ) =~ /Accept/, "text/html description matches expectation" );
-    ok( $restful->description( "json" ) =~ /json/, "json description matches expectation" );
-    ok( $restful->description( "text/javascript" ) =~ /Accept/, "text/javascript description matches expectation" );
 
-    $restful->format( "text/javascript", \&REST::Resource::format_json, "foo" );
-    ok( $restful->description( "text/javascript" ) =~ /foo/, "text/javascript description matches expectation: " . $restful->description( "text/javascript" )  );
-
-    ok( $restful->format_xml( $cgi, 200, { foo => "bar" } ) ne "", "format_xml() results match expectation." );
-    ok( $restful->format_json( $cgi, 200, { foo => "bar" } ) ne "", "format_json() results match expectation." );
-    ok( $restful->format_html( $cgi, 200, { foo => "bar" } ) ne "", "format_html() results match expectation." );
-
-    $ENV{HTTP_ACCEPT}	= "application/xml, text/html, text/javascript, text/plain";
-    ok( $restful->default_format( $cgi ) eq "application/xml", "Accept: application/xml; induced correct default format detection." );
-    $ENV{HTTP_ACCEPT}	= "text/javascript, application/xml, text/html, text/plain";
-    ok( $restful->default_format( $cgi ) eq "text/javascript", "Accept: text/javascript; induced correct default format detection." );
     $ENV{HTTP_ACCEPT}	= "text/html, application/xml, text/javascript, text/plain";
     ok( $restful->default_format( $cgi ) eq "text/html", "Accept: text/html; induced correct default format detection." );
     $ENV{HTTP_ACCEPT}	= "text/plain, text/html, application/xml, text/javascript";
@@ -184,11 +162,6 @@ sub	test_formats
     ok( $restful->default_format( $cgi ) eq "text/html", "Konqueror browser defaults to html." . $restful->default_format( $cgi ) );
 
 
-
-    $cgi->param( "format", "xml" );
-    ok( $restful->default_format( $cgi ) eq "xml", "?format=xml; induced correct default format detection." );
-    $cgi->param( "format", "json" );
-    ok( $restful->default_format( $cgi ) eq "json", "?format=json; induced correct default format detection." );
     $cgi->param( "format", "html" );
     ok( $restful->default_format( $cgi ) eq "html", "?format=html; induced correct default format detection." );
     $cgi->param( "format", "text" );
@@ -209,53 +182,6 @@ sub	test_status
 
     my( $status, $data )	= $restful->$method( $cgi );
     ok( $status eq $expected, "Method [$method] returned status [$status], expected status [$expected]" );
-}
-
-
-
-#----------------------------------------------------------------------
-sub	test_response
-{
-    my( $restful )	= shift;
-    my( $cgi )		= shift;
-
-    my( $io_string )	= new IO::String();
-    my( $content )	= "";
-
-    $ENV{HTTP_ACCEPT}	= "q=1.0, text/plain";
-    $io_string		= new IO::String();
-    select( $io_string );
-    $restful->handle_request();
-    $content = Dumper( $io_string );
-    ok( $content =~ /\$VAR1/, "Data::Dumper output detected in text/plain response." );
-
-    $ENV{HTTP_ACCEPT}	= "q=1.0, text/javascript";
-    $io_string		= new IO::String();
-    select( $io_string );
-    $restful->handle_request();
-    $content = Dumper( $io_string );
-    ok( $content =~ /\$VAR1/, "JSON output detected in text/javascritp response." . $content );
-
-    $ENV{HTTP_ACCEPT}	= "q=1.0, text/html";
-    $io_string		= new IO::String();
-    select( $io_string );
-    $restful->handle_request();
-    $content = Dumper( $io_string );
-    ok( $content =~ /\<html\>/, "HTML output detected in text/html response." . $content );
-
-    $ENV{HTTP_ACCEPT}	= "q=1.0, application/xml";
-    $io_string		= new IO::String();
-    select( $io_string );
-    $restful->handle_request();
-    $content = Dumper( $io_string );
-    ok( $content =~ /\#REQUIRED/, "XML output detected in application/xml response." . $content );
-
-    $ENV{REQUEST_METHOD}	= "blurfl";
-    $io_string		= new IO::String();
-    select( $io_string );
-    $restful->handle_request();
-    $content = Dumper( $io_string );
-    ok( $content =~ /\#REQUIRED/, "XML output detected in spite of bad REQUEST_METHOD." . $content );
 }
 
 
@@ -352,49 +278,15 @@ sub	test_no_header
 
 
 #----------------------------------------------------------------------
-sub	test_authentication
-{
-    my( $cgi )		= shift;
-    my( $io_string )	= new IO::String();
-    my( $restful )	= new good::derived_resource();
-    $restful->method( "authenticate", \&good::derived_resource::unauthorized, "401: Unauthorized behavior" );
-
-    select( $io_string );
-    $restful->handle_request( $cgi );
-    ok( 1, "No failures executing handle_request with unauthorized behavior (weak test)." );
-}
-
-
-
-
-
-
-
-#----------------------------------------------------------------------
 sub	test_default_format_detection
 {
     my( $restful )	= new REST::Resource();
     my( $cgi )		= new REST::Request();
-    $ENV{HTTP_ACCEPT}	= "q=1.0, application/xhtml+xml, application/xml";
-    ok( $restful->default_format( $cgi ) eq "application/xml", "quality 1.0 application/xml default format detected." );
-
-    $ENV{HTTP_ACCEPT}	= "q=1.0, some/mimetype; q=0, other/mimetype";
-    ok( $restful->default_format( $cgi ) eq "xml", "default xml default format presumed." );
-
-    $ENV{HTTP_ACCEPT}	= "q=0.1, some/mimetype";
-    ok( $restful->default_format( $cgi ) eq "xml", "default xml default format presumed." );
-
     $ENV{HTTP_ACCEPT}	= "q=1.0, text/plain";
     ok( $restful->default_format( $cgi ) eq "text/plain", "quality 1.0 text/plain default format detected." );
 
     $ENV{HTTP_ACCEPT}	= "q=1.0, text/html";
     ok( $restful->default_format( $cgi ) eq "text/html", "quality 1.0 text/html default format detected." );
-
-    $ENV{HTTP_ACCEPT}	= "q=1.0, text/javascript";
-    ok( $restful->default_format( $cgi ) eq "text/javascript", "quality 1.0 text/javascript default format detected." );
-
-    $ENV{HTTP_ACCEPT}	= undef;
-    ok( $restful->default_format( $cgi ) eq "xml", "no accept header returns xml by default." );
 }
 
 

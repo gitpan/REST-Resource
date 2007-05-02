@@ -1,4 +1,305 @@
 ------------------------------------------------------------------------
+r908 | frotz | 2007-05-02 07:35:40 -0700 (Wed, 02 May 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/t/07_no_conditional_modules.t
+
+FIXED: Dumb syntax errors.  (I miss try/catch...)
+
+------------------------------------------------------------------------
+r907 | frotz | 2007-05-02 07:34:56 -0700 (Wed, 02 May 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/t/07_no_conditional_modules.t
+
+ADDED: Another test to increase code coverage in REST::Resource->run().
+
+------------------------------------------------------------------------
+r906 | frotz | 2007-05-02 07:33:29 -0700 (Wed, 02 May 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/t/03_fcgi.t
+
+ADDED: A change to allow more coverage in REST::Resource->run().
+
+------------------------------------------------------------------------
+r905 | frotz | 2007-05-02 07:33:02 -0700 (Wed, 02 May 2007) | 3 lines
+Changed paths:
+   M /REST-Resource/trunk/t/07_no_conditional_modules.t
+
+ADDED: Code to try and cover a conditional surrounding environments
+with no FCGI support installed.
+
+------------------------------------------------------------------------
+r904 | frotz | 2007-05-02 07:32:35 -0700 (Wed, 02 May 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+FIXED: Bad example code for run() (and FCGI environments).
+
+------------------------------------------------------------------------
+r902 | root | 2007-04-29 18:17:09 -0700 (Sun, 29 Apr 2007) | 1 line
+Changed paths:
+   M /REST-Resource/trunk/eg/cgi_server/parts.cgi
+   M /REST-Resource/trunk/eg/fcgi_server/parts.fcgi
+   M /REST-Resource/trunk/etc/build_number.txt
+   M /REST-Resource/trunk/lib/REST/Request.pm
+   M /REST-Resource/trunk/lib/REST/RequestFast.pm
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+Finalizing Build 0.5.2.3.
+------------------------------------------------------------------------
+r901 | frotz | 2007-04-29 18:16:23 -0700 (Sun, 29 Apr 2007) | 3 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/RequestFast.pm
+
+CHANGED: Unit Test Coverage indicates that I never get a valid
+expansion out of CGI::Fast->http().  Dropping the conditional.
+
+------------------------------------------------------------------------
+r900 | frotz | 2007-04-29 17:46:00 -0700 (Sun, 29 Apr 2007) | 3 lines
+Changed paths:
+   M /REST-Resource/trunk/MANIFEST
+
+ADDED: Test to gain code coverage by simulating a sparse environment
+(e.g. no XML::Dumper or JSON modules available).
+
+------------------------------------------------------------------------
+r898 | root | 2007-04-29 17:44:45 -0700 (Sun, 29 Apr 2007) | 1 line
+Changed paths:
+   M /REST-Resource/trunk/eg/cgi_server/parts.cgi
+   M /REST-Resource/trunk/eg/fcgi_server/parts.fcgi
+   M /REST-Resource/trunk/etc/build_number.txt
+   M /REST-Resource/trunk/lib/REST/Request.pm
+   M /REST-Resource/trunk/lib/REST/RequestFast.pm
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+Finalizing Build 0.5.2.2.
+------------------------------------------------------------------------
+r897 | frotz | 2007-04-29 17:43:34 -0700 (Sun, 29 Apr 2007) | 3 lines
+Changed paths:
+   D /REST-Resource/trunk/t/04-pod.t
+   D /REST-Resource/trunk/t/05-pod_coverage.t
+
+CHANGED: Filenames (sequences) of the POD and POD Coverage tests.
+
+
+------------------------------------------------------------------------
+r896 | frotz | 2007-04-29 17:42:38 -0700 (Sun, 29 Apr 2007) | 3 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+FIXED: Code so that it can be (hopefully) be testable by CPAN Testers
+in sparse environments.
+
+------------------------------------------------------------------------
+r895 | frotz | 2007-04-29 17:41:26 -0700 (Sun, 29 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/CHANGES
+
+ADDED: Comment about fixing POD oddities.
+
+------------------------------------------------------------------------
+r894 | frotz | 2007-04-29 17:40:56 -0700 (Sun, 29 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/t/03_fcgi.t
+
+REMOVED: Diagnostic that is not part of the test and shouldn't be in the deliverable.
+
+------------------------------------------------------------------------
+r893 | frotz | 2007-04-29 17:40:14 -0700 (Sun, 29 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/Build.PL
+
+ADDED: build-time dependencies.
+
+------------------------------------------------------------------------
+r892 | frotz | 2007-04-29 14:24:06 -0700 (Sun, 29 Apr 2007) | 5 lines
+Changed paths:
+   A /REST-Resource/trunk/t/07_no_conditional_modules.t
+
+DESCRIPTION: t/07_no_conditional_modules.t - This test plays games
+with the Perl loader so that we can raise the code coverage on lines
+in the production code which are aimed at sparse functionality
+availibility (e.g. CPAN Testers).
+
+------------------------------------------------------------------------
+r891 | frotz | 2007-04-29 14:18:35 -0700 (Sun, 29 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+CHANGED: Test whereby we determine if a given module is loaded or not.
+
+------------------------------------------------------------------------
+r890 | frotz | 2007-04-29 07:41:52 -0700 (Sun, 29 Apr 2007) | 4 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+FIXED: mimetype_mapping needs to be an instance value, not a package
+value.  Otherwise, it is more difficult to test conditional module
+availability handling logic.
+
+------------------------------------------------------------------------
+r889 | frotz | 2007-04-29 07:37:36 -0700 (Sun, 29 Apr 2007) | 3 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+CHANGED: Conditional module availability code now surrounds related
+instance fields more accurately..
+
+------------------------------------------------------------------------
+r888 | frotz | 2007-04-28 09:00:27 -0700 (Sat, 28 Apr 2007) | 3 lines
+Changed paths:
+   A /REST-Resource/trunk/docs/ROADMAP.txt
+
+DESCRIPTION: docs/ROADMAP.txt - Provide ideas of where this module is
+likely to go.
+
+------------------------------------------------------------------------
+r886 | frotz | 2007-04-28 04:29:07 -0700 (Sat, 28 Apr 2007) | 4 lines
+Changed paths:
+   A /REST-Resource/trunk/t/04_conditional_methods.t
+
+DESCRIPTION: t/04_conditional_methods.t - Provides unit testing for
+modules that may not exist in the default / CPAN Tester environment.
+Gracefully degrades testing if the target module is not available.
+
+------------------------------------------------------------------------
+r884 | root | 2007-04-27 08:49:47 -0700 (Fri, 27 Apr 2007) | 1 line
+Changed paths:
+   M /REST-Resource/trunk/eg/cgi_server/parts.cgi
+   M /REST-Resource/trunk/eg/fcgi_server/parts.fcgi
+   M /REST-Resource/trunk/etc/build_number.txt
+   M /REST-Resource/trunk/lib/REST/Request.pm
+   M /REST-Resource/trunk/lib/REST/RequestFast.pm
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+Finalizing Build 0.5.2.1.
+------------------------------------------------------------------------
+r883 | frotz | 2007-04-27 08:49:11 -0700 (Fri, 27 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/MANIFEST
+
+ADDED: New files to the deliverable.
+
+------------------------------------------------------------------------
+r882 | frotz | 2007-04-27 08:47:51 -0700 (Fri, 27 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/RequestFast.pm
+
+FIXED: POD oddities with indented text.
+
+------------------------------------------------------------------------
+r881 | frotz | 2007-04-27 08:47:07 -0700 (Fri, 27 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/Request.pm
+
+FIXED: POD oddities with indented text.
+
+------------------------------------------------------------------------
+r880 | frotz | 2007-04-27 08:46:07 -0700 (Fri, 27 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+FIXED: POD oddities with indented text.
+
+------------------------------------------------------------------------
+r879 | frotz | 2007-04-27 08:31:15 -0700 (Fri, 27 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/CHANGES
+
+ADDED: Comment for 0.5.2 release.
+
+------------------------------------------------------------------------
+r877 | root | 2007-04-27 04:28:05 -0700 (Fri, 27 Apr 2007) | 1 line
+Changed paths:
+   M /REST-Resource/trunk/eg/cgi_server/parts.cgi
+   M /REST-Resource/trunk/eg/fcgi_server/parts.fcgi
+   M /REST-Resource/trunk/etc/build_number.txt
+   M /REST-Resource/trunk/lib/REST/Request.pm
+   M /REST-Resource/trunk/lib/REST/RequestFast.pm
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+Finalizing Build 0.5.2.0.
+------------------------------------------------------------------------
+r876 | frotz | 2007-04-27 04:23:32 -0700 (Fri, 27 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+FIXED: Uninitialized value usage.
+
+------------------------------------------------------------------------
+r875 | frotz | 2007-04-27 04:19:29 -0700 (Fri, 27 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/t/02_methods.t
+
+CHANGED: Moved 27 tests to 04-conditional_methods.t.
+
+------------------------------------------------------------------------
+r874 | frotz | 2007-04-27 04:17:57 -0700 (Fri, 27 Apr 2007) | 2 lines
+Changed paths:
+   A /REST-Resource/trunk/t/06-pod_coverage.t
+
+ADDED: Kwalitee Test::Pod::Coverage test.
+
+------------------------------------------------------------------------
+r873 | frotz | 2007-04-27 04:16:51 -0700 (Fri, 27 Apr 2007) | 2 lines
+Changed paths:
+   A /REST-Resource/trunk/t/05-pod.t
+
+ADDED: Kwalitee Test::Pod test.
+
+------------------------------------------------------------------------
+r872 | frotz | 2007-04-27 04:16:17 -0700 (Fri, 27 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/t/02_methods.t
+
+REMOVED: Tests which rely on optional module dependencies (xml; json).
+
+------------------------------------------------------------------------
+r871 | frotz | 2007-04-27 04:10:07 -0700 (Fri, 27 Apr 2007) | 2 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+FIXED: Default type can't be "xml" unless XML::Dumper is available.
+
+------------------------------------------------------------------------
+r870 | frotz | 2007-04-27 03:58:21 -0700 (Fri, 27 Apr 2007) | 9 lines
+Changed paths:
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+FIXED: XML::Dumper dependency failure:
+    http://www.nntp.perl.org/group/perl.cpan.testers/2007/04/msg467525.html
+    http://www.nntp.perl.org/group/perl.cpan.testers/2007/04/msg467106.html
+    http://www.nntp.perl.org/group/perl.cpan.testers/2007/04/msg467106.html
+    http://www.nntp.perl.org/group/perl.cpan.testers/2007/04/msg467103.html
+    http://www.nntp.perl.org/group/perl.cpan.testers/2007/04/msg467091.html
+
+FIXED: JSON dependency failure (not yet showing up in CPAN Testers reports).
+
+------------------------------------------------------------------------
+r869 | frotz | 2007-04-24 21:23:45 -0700 (Tue, 24 Apr 2007) | 2 lines
+Changed paths:
+   A /REST-Resource/trunk/t/05-pod_coverage.t
+
+ADDED: Kwalitee test using Test::Pod::Coverage.
+
+------------------------------------------------------------------------
+r868 | frotz | 2007-04-24 06:15:20 -0700 (Tue, 24 Apr 2007) | 2 lines
+Changed paths:
+   A /REST-Resource/trunk/t/04-pod.t
+
+ADDED: Kwalitee test using Test::Pod.
+
+------------------------------------------------------------------------
+r866 | root | 2007-04-23 07:14:58 -0700 (Mon, 23 Apr 2007) | 1 line
+Changed paths:
+   M /REST-Resource/trunk/eg/cgi_server/parts.cgi
+   M /REST-Resource/trunk/eg/fcgi_server/parts.fcgi
+   M /REST-Resource/trunk/etc/build_number.txt
+   M /REST-Resource/trunk/lib/REST/Request.pm
+   M /REST-Resource/trunk/lib/REST/RequestFast.pm
+   M /REST-Resource/trunk/lib/REST/Resource.pm
+
+Finalizing Build 0.5.1.14.
+------------------------------------------------------------------------
 r865 | frotz | 2007-04-23 07:12:37 -0700 (Mon, 23 Apr 2007) | 4 lines
 Changed paths:
    A /REST-Resource/trunk/CHANGES

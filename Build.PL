@@ -125,6 +125,8 @@ sub	main
 					   "Devel::Cover" 	=> ">= 0.55",
 					   "Test::Class"	=> ">= 0.22",
 					   "Test::More"		=> ">= 0.66",
+					   "Test::Pod"		=> "> 0",
+					   "Pod::Simple"	=> "> 0",
 				       },
 				       );
     $build->create_build_script;

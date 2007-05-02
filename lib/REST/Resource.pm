@@ -45,8 +45,8 @@
 
 =head1	METHOD REGISTRATION
 
-    HTTP method handlers should be members of your derived class and
-    expect $this (or $self) as the first parameter.
+HTTP method handlers should be members of your derived class and
+expect $this (or $self) as the first parameter.
 
     sub	Create	{ my( $this ) = shift;	my( $request_interface_instance ) = shift; ... }
     sub	Read	{ my( $this ) = shift;	my( $request_interface_instance ) = shift; ... }
@@ -55,54 +55,60 @@
 
 =head1	REQUEST INTERFACE INSTANCE
 
-    $request_interface_instance is a wrapper for your favorite Common
-    Gateway Interface implementation.  Mine is CGI.pm for server-side
-    request interrogation and server-side response.
+$request_interface_instance is a wrapper for your favorite Common
+Gateway Interface implementation.  Mine is CGI.pm for server-side
+request interrogation and server-side response.
 
-    If you don't like this, create a class modeled after REST::Request
-    and register it with:
+If you don't like this, create a class modeled after REST::Request and
+register it with:
 
     my( $restful ) = new REST::Resource( request_interface => new My::REST::Request() );
 
-    The REST::Resource constructor will validate that
-    My::REST::Request implements the requisite methods new(), http(),
-    param() and header() and then only use these methods to interace
-    with the Common Gateway Interface variables.
+The REST::Resource constructor will validate that My::REST::Request
+implements the requisite methods new(), http(), param() and header()
+and then only use these methods to interace with the Common Gateway
+Interface variables.
 
 =head1	REQUESTED RETURNED CONTENT-TYPE:
 
-    The requesting client is responsible for specifying the
-    returned Content-Type: header in one of two ways.
+The requesting client is responsible for specifying the returned
+Content-Type: header in one of two ways.
 
-    [] Via the "Accept: application/xml" HTTP header.
-    [] Via the CGI query parameter ?format=xml
+[] Via the "Accept: application/xml" HTTP header.
+[] Via the CGI query parameter ?format=xml
 
-    The Accept: header is preferred as it is semantically
-    cleaner, but the CGI query parameter is also supported in
-    recognition of the fact that sometimes it is easier to affect the
-    request URL than it is to get at and specify the HTTP headers.
+The Accept: header is preferred as it is semantically cleaner, but the
+CGI query parameter is also supported in recognition of the fact that
+sometimes it is easier to affect the request URL than it is to get at
+and specify the HTTP headers.
 
 =head1	DEFAULT SUPPORTED CONTENT TYPES
 
-    The supported content types provided by the base class are:
+The supported content types provided by the base class are:
 
-    []	?format=xml	or	Accept: application/xml
-    []	?format=json	or	Accept: text/javascript
-    []	?format=html	or	Accept: text/html
+[]	?format=xml	or	Accept: application/xml
+[]	?format=json	or	Accept: text/javascript
+[]	?format=html	or	Accept: text/html
 
-    HTML will be returned if the requestor appears to be a browser and
-    no format is specified.
+HTML will be returned if the requestor appears to be a browser and no
+format is specified.
 
-    XML will be returned if the requestor does NOT appear to be a
-    browser and no format is specified.
+XML will be returned if the requestor does NOT appear to be a browser
+and no format is specified.
 
 =head1	AUTHOR
 
-    frotz@acm.org				Fork of WWW::Resource into REST::Resource.
+frotz@acm.org				Fork of WWW::Resource into REST::Resource.
 
 =head1	CREDITS
 
-    Ira Woodhead <ira at sweetpota dot to>	For his WWW::Resource implementation.
+Ira Woodhead <ira at sweetpota dot to>	For his WWW::Resource implementation.
+
+=head1	BUGS
+
+In the spirit of Transparency, please use rt.cpan.org to file bugs.
+This way everyone can see what bugs have been reported and what their
+status is and hopefully the fixed-in release.
 
 =head1	METHODS
 
@@ -115,25 +121,13 @@ use warnings;			## Very strict coding standards
 
 use CGI	qw( :standard );
 use HTTP::Status;		## Mneumonic HTTP Status codes.
-use XML::Dumper;		## Output format: XML
 use Data::Dumper;		## Output format: HTML
-use JSON;			## Output format: JavaScript Object Notation
+use REST::Request;		## Conditional CGI Request Support
 
-our( $VERSION )	= '0.5.1.14';	## MODULE-VERSION-NUMBER
+eval "use XML::Dumper; 		import XML::Dumper; ";		## Conditional Output format: XML
+eval "use JSON;        		import JSON; ";			## Conditional Output format: JavaScript Object Notation
 
-my( $mimetype_mapping )	=
-{
-    "xml"		=> "application/xml",
-    "html"		=> "text/html",
-    "text"		=> "text/plain",
-    "json"		=> "text/javascript",
-
-    "application/xml"	=> "application/xml",
-    "text/html"		=> "text/html",
-    "text/plain"	=> "text/plain",
-    "text/javascript"	=> "text/javascript",
-};
-
+our( $VERSION )	= '0.5.2.4';	## MODULE-VERSION-NUMBER
 
 
 
@@ -153,11 +147,10 @@ USAGE:
 
 DESCRIPTION:
 
-    Create an instance of a REST::Resource, or one of its
-    derived classes.
+Create an instance of a REST::Resource, or one of its derived classes.
 
-    If you need a specific implementation of the REST::Request
-    interface, pass it in as shown in the second constructor call.
+If you need a specific implementation of the REST::Request interface,
+pass it in as shown in the second constructor call.
 
 =cut
 
@@ -171,7 +164,6 @@ sub	new
 
     unless  (exists( $args->{request_interface} ))
     {
-	use REST::Request;
 	$args->{request_interface}	= new REST::Request();
     }
     my( $request )	= $args->{request_interface};
@@ -193,6 +185,15 @@ sub	new
     $this->{formats}	= {};
     $this->{descriptions} = {};
 
+    $this->{mimetype_mapping}	=
+    {
+	"html"		=> "text/html",
+	"text/html"	=> "text/html",
+
+	"text"		=> "text/plain",
+	"text/plain"	=> "text/plain",
+    };
+
     $this->method( "GET",		\&REST::Resource::unimplemented, "GET: Unimplemented read accessor." );
     $this->method( "PUT",		\&REST::Resource::unimplemented, "PUT: Unimplemented create mutator." );
     $this->method( "POST",		\&REST::Resource::unimplemented, "POST: Unimplemented update mutator." );
@@ -203,12 +204,26 @@ sub	new
 		   \&REST::Resource::authenticate,
 		   "authenticate: Default no-authorization-required authentication control implementation." );
 
-    $this->format( "application/xml",	\&REST::Resource::format_xml, "Returns generic XML.  Request via 'Accept: application/xml' or '?format=xml'" );
     $this->format( "text/html",		\&REST::Resource::format_html, "Returns HTML UI.  Request via 'Accept: text/html' or '?format=html'" );
     $this->format( "text/plain",	\&REST::Resource::format_text, "Returns Text UI.  Request via 'Accept: text/plain' or '?format=text'" );
-    $this->format( "text/javascript",	\&REST::Resource::format_json, "Returns Javascript Object Notation (JSON).  Request via 'Accept: text/javascript' or '?format=json'" );
-
-    $this->{ttl}	= 60 * 60;
+    if  (-f $INC{"XML/Dumper.pm"})
+    {
+	$this->{mimetype_mapping}->{xml} = "application/xml";		## Support: ?format=xml
+	$this->format( "application/xml",
+		       \&REST::Resource::format_xml,
+		       "Returns generic XML.  Request via 'Accept: application/xml' or '?format=xml'" );
+    };
+    if  (-f $INC{"JSON.pm"})
+    {
+	$this->{mimetype_mapping}->{json} = "text/javascript";		## Support: ?format=json
+	$this->format( "text/javascript",
+		       \&REST::Resource::format_json,
+		       "Returns Javascript Object Notation (JSON).  Request via 'Accept: text/javascript' or '?format=json'" );
+    };
+    if  (-f $INC{"REST/RequestFast.pm"})
+    {
+	$this->{ttl}	= 60 * 60;
+    }
     return( $this );
 }
 
@@ -223,7 +238,7 @@ sub	new
 
 USAGE:
 
-    my( $restful )	= new REST::Resource( new REST::RequestFast() );
+    my( $restful )	= new REST::Resource( request_interface => new REST::RequestFast() );
     $restful->run();
 
     my( $restful )	= new Your::WWW::Resource::Implementation( new REST::RequestFast() );
@@ -231,31 +246,31 @@ USAGE:
 
 DESCRIPTION:
 
-    This method will run a REST::RequestFast instance.  It delegates
-    request interpolation to the registered request instance via the
-    constructor.  The default is a shim derived class of CGI.pm.
+This method will run a REST::RequestFast instance.  It delegates
+request interpolation to the registered request instance via the
+constructor.  The default is a shim derived class of CGI.pm.
 
 WWW::RESOURCE COMPATIBILITY:
 
-    If your derived class provides the WWW::Resource suggested
-    callbacks browserprint() and ttl(), this method will honor those
-    and fold in the new code hook mechanism.
+If your derived class provides the WWW::Resource suggested callbacks
+browserprint() and ttl(), this method will honor those and fold in the
+new code hook mechanism.
 
 WARNING:
 
-    If your derived class contains the method "browserprint()",
-    the calling semantics for _all_ methods will be \%query.
+If your derived class contains the method "browserprint()", the
+calling semantics for _all_ methods will be \%query.
 
-        $instance->$method( \%query_hash );
+    $instance->$method( \%query_hash );
 
-    If your derived class does NOT contain the method "browserprint()",
-    it is assumed that you are using the new calling semantics where
-    you method handler is passed the request instance.
+If your derived class does NOT contain the method "browserprint()", it
+is assumed that you are using the new calling semantics where you
+method handler is passed the request instance.
 
-        $instance->$method( $request_instance );
+    $instance->$method( $request_instance );
 
-    Thus ref( $arg ) will be "HASH" for the old style and an object
-    reference for the new style.
+Thus ref( $arg ) will be "HASH" for the old style and an object
+reference for the new style.
 
 =cut
 
@@ -265,9 +280,9 @@ sub	run
 
     eval
     {
-	require "REST/RequestFast.pm";			## Conditional environment fun and games.
+	use REST::RequestFast;			## Conditional environment fun and games.
     };
-    if  (defined( %REST::RequestFast:: ))
+    if  (-f $INC{"REST/RequestFast.pm"})
     {
 	my( $html )	= $this->can( "browserprint" );						## WWW::Resource signature method.
 	my( $ttl )	= $this->can( "ttl" );
@@ -305,7 +320,7 @@ sub	run
     }
     else
     {
-	die "REST::Request did not load.  Presumably CGI::Fast and FCGI are unavailable.";
+	die "REST::RequestFast did not load.  Presumably CGI::Fast and FCGI are unavailable.";
     }
 }
 
@@ -326,8 +341,8 @@ USAGE:
 
 DESCRIPTION:
 
-    This method runs a single action handler.  Optionally pass in the
-    CGI request to be handled.
+This method runs a single action handler.  Optionally pass in the CGI
+request to be handled.
 
 =cut
 
@@ -366,24 +381,24 @@ USAGE:
 
 DESCRIPTION:
 
-    This accessor/mutator allows the caller to register or change the
-    implementation behavior for a given HTTP method handler.  The standard
-    event handlers that are pre-registered are:
+This accessor/mutator allows the caller to register or change the
+implementation behavior for a given HTTP method handler.  The standard
+event handlers that are pre-registered are:
 
-        GET
-        PUT
-        POST
-        DELETE
-        TRACE
-        HEAD
+    GET
+    PUT
+    POST
+    DELETE
+    TRACE
+    HEAD
 
-    Additionally, the following pseudo-methods provide over-ride control
-    to derived class implementors.
+Additionally, the following pseudo-methods provide over-ride control
+to derived class implementors.
 
-        authenticate
+    authenticate
 
-    Unless otherwise overridden, the default implementation for each
-    of these methods is REST::Resource->unimplemented().
+Unless otherwise overridden, the default implementation for each of
+these methods is REST::Resource->unimplemented().
 
 =cut
 
@@ -421,8 +436,8 @@ USAGE:
 
 DESCRIPTION:
 
-    This accessor/mutator allows the caller to register or change the
-    implementation behavior for a given output format.
+This accessor/mutator allows the caller to register or change the
+implementation behavior for a given output format.
 
 =cut
 
@@ -430,7 +445,7 @@ sub	format
 {
     my( $this )			= shift;
     my( $format )		= shift;
-    $format			= $mimetype_mapping->{$format}		if (exists( $mimetype_mapping->{$format} ));
+    $format			= $this->{mimetype_mapping}->{$format}		if (exists( $this->{mimetype_mapping}->{$format} ));
     my( $implementation )	= shift;
     my( $description )		= shift;
     $description		= "$format: No format semantics provided during format registration."	unless( $description );
@@ -440,7 +455,7 @@ sub	format
     {
 	$this->{formats}->{$format}		= $implementation;
 	$this->{descriptions}->{$format}	= $description;
-	$mimetype_mapping->{$format}		= $format;
+	$this->{mimetype_mapping}->{$format}	= $format;
     }
     return( $old );
 }
@@ -461,11 +476,11 @@ USAGE:
 
 DESCRIPTION:
 
-    This accessor/mutator allows the caller to register or change the
-    description for a given HTTP method handler or output format.
+This accessor/mutator allows the caller to register or change the
+description for a given HTTP method handler or output format.
 
-    This is used by REST::Resource->api() to provide a description
-    of the API.
+This is used by REST::Resource->api() to provide a description of the
+API.
 
 PARAMETERS:
 
@@ -502,8 +517,8 @@ USAGE:
 
 DESCRIPTION:
 
-    This method generates a resultset that can be returned through
-    $this->_return_result( $status, $data );
+This method generates a resultset that can be returned through
+$this->_return_result( $status, $data );
 
 =cut
 
@@ -549,8 +564,8 @@ USAGE:
 
 DESCRIPTION:
 
-    This method may be overridden by a derived class that requires
-    HTTP request authentication.
+This method may be overridden by a derived class that requires
+HTTP request authentication.
 
 STATUS VALUES:
 
@@ -560,8 +575,8 @@ STATUS VALUES:
 
 DERIVED IMPLEMENTATIONS:
 
-    This method may be overridden in the derived class in order to
-    require a specific set of credentials.
+This method may be overridden in the derived class in order to
+require a specific set of credentials.
 
 =cut
 
@@ -590,8 +605,9 @@ USAGE:
 
 DESCRIPTION:
 
-    This method will format $data as XML via XML::Dumper with an
-    included in-document DTD.
+This method will format $data as XML via XML::Dumper with an included
+in-document DTD.  This method will only be registered if the module
+XML::Deumper is found in the execution environment.
 
 =cut
 
@@ -627,7 +643,7 @@ USAGE:
 
 DESCRIPTION:
 
-    Use Data::Dumper to emit $data in text/plain format.
+Use Data::Dumper to emit $data in text/plain format.
 
 =cut
 
@@ -661,8 +677,8 @@ USAGE:
 
 DESCRIPTION:
 
-    Use Data::Dumper to emit $data, then translate it via simple <pre>
-    tags with limited CSS to control the font-size.
+Use Data::Dumper to emit $data, then translate it via simple <pre>
+tags with limited CSS to control the font-size.
 
 =cut
 
@@ -707,8 +723,9 @@ USAGE:
 
 DESCRIPTION:
 
-    This method will format $data in JSON (JavaScript Object
-    Notation).
+This method will format $data in JSON (JavaScript Object Notation).
+This method will only be registered if JSON is found in the execution
+environment.
 
 =cut
 
@@ -718,6 +735,7 @@ sub	format_json
     my( $req )		= shift;
     my( $status )	= shift;
     my( $data )		= shift;
+
     return( join( "",
 		  $req->header( -status => $status,
 				-expires => "+15s",
@@ -747,8 +765,8 @@ USAGE:
 
 DESCRIPTION:
 
-    This method is invoked if an unregistered HTTP REQUEST_METHOD is
-    invoked.
+This method is invoked if an unregistered HTTP REQUEST_METHOD is
+invoked.
 
 =cut
 
@@ -782,19 +800,21 @@ USAGE:
 
 DESCRIPTION:
 
-    This method will return the requested format.  We look in two
-    places.  The first is in the query parameter list for the
-    parameter "format".  If that is defined, we return that value.
+This method will return the requested format.  We look in two
+places.  The first is in the query parameter list for the
+parameter "format".  If that is defined, we return that value.
 
-    Otherwise, we scan through the list of q=1.0 Accept: headers and
-    return the first matching MIME-type.
+Otherwise, we scan through the list of q=1.0 Accept: headers and
+return the first matching MIME-type.
 
 SAMPLE OPERA Accept: / User-Agent: HEADERS:
+
     Accept: text/html, application/xml;q=0.9, application/xhtml+xml,
             image/png, image/jpeg, image/gif, image/x-xbitmap, */*;q=0.1
     User-Agent: Opera/9.10 (X11; Linux i686; U; en)
 
 SAMPLE FIREFOX Accept: / User-Agent: HEADERS:
+
     Accept: text/xml, application/xml, application/xhtml+xml, text/html;
             q=0.9, text/plain;
             q=0.8, image/png, */*;
@@ -803,6 +823,7 @@ SAMPLE FIREFOX Accept: / User-Agent: HEADERS:
                 Gecko/20070309 Firefox/2.0.0.3
 
 SAMPLE MSIE Accept: / User-Agent: HEADERS:
+
     Accept: image/gif, image/x-xbitmap, image/jpeg, image/pjpeg,
             application/x-shockwave-flash, application/vnd.ms-powerpoint,
             application/vnd.ms-excel, application/msword, */*
@@ -810,14 +831,16 @@ SAMPLE MSIE Accept: / User-Agent: HEADERS:
                              .NET CLR 1.1.4322; .NET CLR 2.0.50727)
 
 SUGGESTIONS FOR JSON DEVELOPERS:
-    Use "Accept: text/javascript" or "?format=json" to get JSON
-    output.  The default algorithm will presume that the client is a
-    human behind a browser and try to encourage html.
+
+Use "Accept: text/javascript" or "?format=json" to get JSON
+output.  The default algorithm will presume that the client is a
+human behind a browser and try to encourage html.
 
 SUGGESTIONS FOR AJAX DEVELOPERS:
-    Use "Accept: application/xml" or "?format=xml" to get XML output.
-    The default algorithm will presume that the client is a human
-    behind a browser and try to encourage html.
+
+Use "Accept: application/xml" or "?format=xml" to get XML output.
+The default algorithm will presume that the client is a human
+behind a browser and try to encourage html.
 
 =cut
 
@@ -852,12 +875,18 @@ sub	default_format
 	{
 	    return( $format )	    if (exists( $this->{formats}->{$format} ));		## Return specified MIME-type.
 	}
-	if  ($useragent =~ /MSIE/)
+	if  (defined( $useragent ) &&
+	     $useragent =~ /MSIE/)
 	{
 	    return( "html" );								## MSIE doesn't auto-match, so push HTML
 	}
     }
-    return( "xml" );
+    my( $default_type )	= "html";
+    if  (defined( %XML::Dumper:: ))
+    {
+	$default_type	= "xml";
+    }
+    return( $default_type );
 }
 
 
@@ -875,12 +904,13 @@ USAGE:
 
 DESCRIPTION:
 
-    Return a new request_interface instance.  This instance must
-    support the methods: new(), http(), param() and header().
+Return a new request_interface instance.  This instance must
+support the methods: new(), http(), param() and header().
 
 SEE ALSO:
 
     REST::Request
+    REST::RequestFast
 
 =cut
 
@@ -906,9 +936,8 @@ USAGE:
 
 DESCRIPTION:
 
-    This method is handed output of a given REQUEST_METHOD handler and
-    is responsible for appropriate status code emission and $data
-    formatting.
+This method is handed output of a given REQUEST_METHOD handler and is
+responsible for appropriate status code emission and $data formatting.
 
 =cut
 

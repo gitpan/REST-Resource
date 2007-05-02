@@ -87,7 +87,7 @@ use Data::Dumper;
 use base qw( REST::Resource );
 use HTTP::Status;
 
-our( $VERSION )	= '0.5.1.14';	## MODULE-VERSION-NUMBER
+our( $VERSION )	= '0.5.2.4';	## MODULE-VERSION-NUMBER
 
 
 

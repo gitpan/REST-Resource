@@ -1,6 +1,6 @@
 ---
 name: REST-Resource
-version: 0.5.1.14
+version: 0.5.2.4
 author:
   - frotz@acm.org
 abstract: Abstract base class for RESTful CGIs.
@@ -25,13 +25,13 @@ recommends:
 provides:
   REST::Request:
     file: lib/REST/Request.pm
-    version: 0.5.1.14
+    version: 0.5.2.4
   REST::RequestFast:
     file: lib/REST/RequestFast.pm
-    version: 0.5.1.14
+    version: 0.5.2.4
   REST::Resource:
     file: lib/REST/Resource.pm
-    version: 0.5.1.14
+    version: 0.5.2.4
 generated_by: Module::Build version 0.2806
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

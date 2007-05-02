@@ -71,7 +71,6 @@ use REST::RequestFast;
 use IO::String;
 use Data::Dumper;
 
-print Dumper \%INC;
 
 
 &main();
@@ -151,11 +150,6 @@ package	Rest::Test2;
 
 use blib;
 use base "REST::Resource";
-
-sub	ttl
-{
-    return( 2 );
-}
 
 sub	browserprint
 {
@@ -237,6 +231,7 @@ sub	test_run
     $ENV{HTTP_ACCEPT}	= "q=1.0, text/html";
     $cgi		= new Mock::CGI(1);
     $restful		= new Rest::Test2( request_interface => $cgi );
+    $restful->{ttl}	= 2;				## Cheat and peak inside but don't let the test stall for long.
     $restful->method( "authenticate", \&Rest::Test2::authenticate, "Unit-test authentication handler for FCGI/run() testing." );
     $restful->method( "DELETE", \&Rest::Test2::my_responder, "Unit-test PUT handler for FCGI/run() testing." );
     $io_string		= new IO::String();
